@@ -1,9 +1,9 @@
-const { Schema, model } = require("mongoose");
+const { Schema, model, mongoose } = require("mongoose");
 
 const reactionSchema = new Schema({
   reactionId: {
-    type: Schema.Types.ObjectId,
-    default: () => new Types.ObjectId(),
+    type: mongoose.Types.ObjectId,
+    default: () => new mongoose.Types.ObjectId(),
   },
   reactionBody: {
     type: String,
@@ -33,7 +33,7 @@ const thoughtSchema = new Schema(
       minlength: 1,
       maxlength: 280,
     },
-    userName: {
+    username: {
       type: String,
       default: true,
     },
