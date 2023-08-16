@@ -4,11 +4,8 @@ module.exports = {
   //get all users
   async getUsers(req, res) {
     try {
-      const users = await User.find();
-
-      const userObj = { users };
-
-      res.json(userObj);
+      const users = await User.find().populate("friends").exec();
+      res.json(users);
     } catch (err) {
       console.log(err);
       return res.status(500).json(err);
