@@ -3,21 +3,32 @@ const { User, Thought } = require("../models");
 module.exports = {
   //get all users
   async getUsers(req, res) {
-    try {      
-      const users = await User.find().populate("friends");
-
-      // Exclude certain fields from each user object
-      const usersWithoutSensitiveData = users.map(user => {
+    try {
+      const users = await User.find()
+      .populate([
+        {
+          path: "thoughts",
+          select: "thoughtText",
+        },
+        {
+          path: "friends",
+          select: "username",
+        },
+      ]);
+   
+      // Select certain fields from each user object
+      const usersSelectData = users.map((user) => {
         return {
           _id: user._id,
           username: user.username,
           email: user.email,
-          friendCount: user.friendCount // Use the virtual property friendCount
+          friendCount: user.friendCount,
+          thoughts: user.thoughts,
+          friends: user.friends,
         };
       });
 
-      res.json(usersWithoutSensitiveData);
-
+      res.json(usersSelectData);
     } catch (err) {
       console.log(err);
       return res.status(500).json(err);
@@ -83,7 +94,9 @@ module.exports = {
       );
 
       if (!updatedUser) {
-        return res.status(404).json({ message: "No user found with that name" });
+        return res
+          .status(404)
+          .json({ message: "No user found with that name" });
       }
 
       res.json(updatedUser);
@@ -98,61 +111,61 @@ module.exports = {
     console.log(req.body);
 
     try {
-      const { userName, friendUsername } = req.body;
+      const { username, friendUsername } = req.body;
       const friendUser = await User.findOne({ username: friendUsername });
 
-    if (!friendUser) {
-      return res
-        .status(404)
-        .json({ message: "No user found with the friendUsername" });
+      if (!friendUser) {
+        return res
+          .status(404)
+          .json({ message: "No user found with the friendUsername" });
+      }
+
+      // Update the user's friends array with the friend's ObjectId
+      const user = await User.findOneAndUpdate(
+        { username: username },
+        { $addToSet: { friends: friendUser._id } }, // Use friendUser._id
+        { runValidators: true, new: true }
+      );
+
+      if (!user) {
+        return res
+          .status(404)
+          .json({ message: "No user found with that name, sorry :(" });
+      }
+
+      res.json(user);
+    } catch (err) {
+      res.status(500).json(err);
     }
-
-    // Update the user's friends array with the friend's ObjectId
-    const user = await User.findOneAndUpdate(
-      { username: userName },
-      { $addToSet: { friends: friendUser._id } }, // Use friendUser._id
-      { runValidators: true, new: true }
-    );
-
-    if (!user) {
-      return res
-        .status(404)
-        .json({ message: "No user found with that name, sorry :(" });
-    }
-
-    res.json(user);
-  } catch (err) {
-    res.status(500).json(err);
-  }
-},
+  },
   // Remove friend from a user
   async removeFriend(req, res) {
     try {
       const { userName, friendUsername } = req.body;
       const friendUser = await User.findOne({ username: friendUsername });
 
-    if (!friendUser) {
-      return res
-        .status(404)
-        .json({ message: "No user found with the friendUsername" });
+      if (!friendUser) {
+        return res
+          .status(404)
+          .json({ message: "No user found with the friendUsername" });
+      }
+
+      // Remove the friend's _id from the user's friends array
+      const user = await User.findOneAndUpdate(
+        { username: userName },
+        { $pull: { friends: friendUser._id } }, // Use friendUser._id
+        { runValidators: true, new: true }
+      );
+
+      if (!user) {
+        return res
+          .status(404)
+          .json({ message: "No user found with that name, sorry :(" });
+      }
+
+      res.json(user);
+    } catch (err) {
+      res.status(500).json(err);
     }
-
-    // Remove the friend's _id from the user's friends array
-    const user = await User.findOneAndUpdate(
-      { username: userName },
-      { $pull: { friends: friendUser._id } }, // Use friendUser._id
-      { runValidators: true, new: true }
-    );
-
-    if (!user) {
-      return res
-        .status(404)
-        .json({ message: "No user found with that name, sorry :(" });
-    }
-
-    res.json(user);
-  } catch (err) {
-    res.status(500).json(err);
-  }
-},
+  },
 };

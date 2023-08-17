@@ -5,7 +5,7 @@ const reactionSchema = new Schema({
     type: mongoose.Types.ObjectId,
     default: () => new mongoose.Types.ObjectId(),
   },
-  reactionBody: {
+  reactionText: {
     type: String,
     required: true,
     maxlength: 280,
@@ -52,7 +52,7 @@ const thoughtSchema = new Schema(
   }
 );
 thoughtSchema.virtual("reactionCount").get(function () {
-  return this.reactions.length;
+  return this.reactions ? this.reactions.length: 0;
 });
 
 const Thought = model("Thought", thoughtSchema);

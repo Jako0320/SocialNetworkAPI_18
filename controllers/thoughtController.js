@@ -1,4 +1,4 @@
-const Thought = require("../models/Thought");
+const { User, Thought } = require("../models");
 
 module.exports = {
   // Get all thoughts
@@ -31,7 +31,22 @@ module.exports = {
   // Create a thought
   async createThought(req, res) {
     try {
-      const thought = await Thought.create(req.body);
+      const { thoughtText, username } = req.body;
+      const thought = await Thought.create({
+        thoughtText,
+        username, // Associate the thought with the user's username
+      });
+      const user = await User.findOneAndUpdate(
+        { username: username },
+        { $push: { thoughts: thought._id } },
+        { new: true }
+      );
+  
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+  
+  
       res.json(thought);
     } catch (err) {
       console.log(err);
@@ -78,12 +93,12 @@ module.exports = {
   // Create a reaction
   async createReaction(req, res) {
     try {
-      const { reactionBody, username } = req.body;
+      const { reactionText, username } = req.body;
       const thoughtId = req.params.thoughtId;
 
       const thought = await Thought.findByIdAndUpdate(
         thoughtId,
-        { $push: { reactions: { reactionBody, username } } },
+        { $push: { reactions: { reactionText, username } } },
         { new: true, runValidators: true }
       );
 
