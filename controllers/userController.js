@@ -36,6 +36,9 @@ module.exports = {
   },
   //get a single user using their ID
   async getSingleUser(req, res) {
+    console.log("You are fetching a user");
+    console.log(req.body);
+    
     try {
       const user = await User.findOne({ _id: req.params.userId }).select(
         "-__v"
@@ -53,6 +56,9 @@ module.exports = {
   },
   //Create user
   async createUser(req, res) {
+    console.log("You are adding a user");
+    console.log(req.body);
+
     try {
       const user = await User.create(req.body);
       res.json(user);
@@ -62,6 +68,9 @@ module.exports = {
   },
   // Delete user
   async deleteUser(req, res) {
+    console.log("You are deleting a user");
+    console.log(req.body);
+
     try {
       const user = await User.findOneAndRemove({ _id: req.params.userId });
 
@@ -86,6 +95,9 @@ module.exports = {
 
   //Update a user info
   async updateUser(req, res) {
+    console.log("You are updating a user");
+    console.log(req.body);
+
     try {
       const updatedUser = await User.findByIdAndUpdate(
         req.params.userId,
@@ -139,7 +151,11 @@ module.exports = {
     }
   },
   // Remove friend from a user
+  
   async removeFriend(req, res) {
+    console.log("You are removing a friend");
+    console.log(req.body);
+
     try {
       const { userName, friendUsername } = req.body;
       const friendUser = await User.findOne({ username: friendUsername });

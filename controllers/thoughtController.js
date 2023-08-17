@@ -14,6 +14,9 @@ module.exports = {
   // Get a thought
   async getSingleThought(req, res) {
     try {
+      console.log("You are fetching a thought");
+      console.log(req.body);
+
       const thought = await Thought.findOne({
         _id: req.params.thoughtId,
       }).select("-__v");
@@ -31,6 +34,9 @@ module.exports = {
   // Create a thought
   async createThought(req, res) {
     try {
+      console.log("You are adding a thought");
+      console.log(req.body);
+
       const { thoughtText, username } = req.body;
       const thought = await Thought.create({
         thoughtText,
@@ -57,6 +63,9 @@ module.exports = {
   // Delete a thought
   async deleteThought(req, res) {
     try {
+      console.log("You are deleting a thought");
+      console.log(req.body);
+
       const thought = await Thought.findOneAndDelete({
         _id: req.params.thoughtId,
       });
@@ -74,6 +83,9 @@ module.exports = {
   // Update a thought
   async updateThought(req, res) {
     try {
+      console.log("You are updating a thought");
+      console.log(req.body);
+
       const thought = await Thought.findOneAndUpdate(
         { _id: req.params.thoughtId },
         { $set: req.body },
@@ -93,6 +105,9 @@ module.exports = {
   // Create a reaction
   async createReaction(req, res) {
     try {
+      console.log("You are adding a reaction");
+      console.log(req.body);
+
       const { reactionText, username } = req.body;
       const thoughtId = req.params.thoughtId;
 
@@ -115,6 +130,9 @@ module.exports = {
   //Delete a reaction
   async deleteReaction(req, res) {
     try {
+      console.log("You are deleting a reaction");
+      console.log(req.body);
+      
       const thoughtId = req.params.thoughtId;
       const reactionId = req.params.reactionId;
 
