@@ -3,9 +3,21 @@ const { User, Thought } = require("../models");
 module.exports = {
   //get all users
   async getUsers(req, res) {
-    try {
-      const users = await User.find().populate("friends").exec();
-      res.json(users);
+    try {      
+      const users = await User.find().populate("friends");
+
+      // Exclude certain fields from each user object
+      const usersWithoutSensitiveData = users.map(user => {
+        return {
+          _id: user._id,
+          username: user.username,
+          email: user.email,
+          friendCount: user.friendCount // Use the virtual property friendCount
+        };
+      });
+
+      res.json(usersWithoutSensitiveData);
+
     } catch (err) {
       console.log(err);
       return res.status(500).json(err);
@@ -71,7 +83,7 @@ module.exports = {
       );
 
       if (!updatedUser) {
-        return res.status(404).json({ message: "No user found with that ID" });
+        return res.status(404).json({ message: "No user found with that name" });
       }
 
       res.json(updatedUser);
@@ -87,42 +99,60 @@ module.exports = {
 
     try {
       const { userName, friendUsername } = req.body;
-      const user = await User.findOneAndUpdate(
-        { username: userName },
-        { $addToSet: { friends: friendUsername } },
-        { runValidators: true, new: true }
-      );
+      const friendUser = await User.findOne({ username: friendUsername });
 
-      if (!user) {
-        return res
-          .status(404)
-          .json({ message: "No user found with that name, sorry :(" });
-      }
-
-      res.json(user);
-    } catch (err) {
-      res.status(500).json(err);
+    if (!friendUser) {
+      return res
+        .status(404)
+        .json({ message: "No user found with the friendUsername" });
     }
-  },
+
+    // Update the user's friends array with the friend's ObjectId
+    const user = await User.findOneAndUpdate(
+      { username: userName },
+      { $addToSet: { friends: friendUser._id } }, // Use friendUser._id
+      { runValidators: true, new: true }
+    );
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ message: "No user found with that name, sorry :(" });
+    }
+
+    res.json(user);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+},
   // Remove friend from a user
   async removeFriend(req, res) {
     try {
       const { userName, friendUsername } = req.body;
-      const user = await User.findOneAndUpdate(
-        { username: userName },
-        { $pull: { friends: friendUsername } },
-        { runValidators: true, new: true }
-      );
+      const friendUser = await User.findOne({ username: friendUsername });
 
-      if (!user) {
-        return res
-          .status(404)
-          .json({ message: "No user found with that name, sorry :(" });
-      }
-
-      res.json(user);
-    } catch (err) {
-      res.status(500).json(err);
+    if (!friendUser) {
+      return res
+        .status(404)
+        .json({ message: "No user found with the friendUsername" });
     }
-  },
+
+    // Remove the friend's _id from the user's friends array
+    const user = await User.findOneAndUpdate(
+      { username: userName },
+      { $pull: { friends: friendUser._id } }, // Use friendUser._id
+      { runValidators: true, new: true }
+    );
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ message: "No user found with that name, sorry :(" });
+    }
+
+    res.json(user);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+},
 };
