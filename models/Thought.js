@@ -44,11 +44,17 @@ const thoughtSchema = new Schema(
     toJSON: {
       getters: true,
       virtuals: true,
+      transform: function (doc, ret) {
+        // Transform the 'id' field to '_id'
+        ret._id = ret.id;
+        delete ret.id; // Remove the 'id' field
+        delete ret.__v; // Remove the '__v' field
+      },
     },
   }
 );
 thoughtSchema.virtual("reactionCount").get(function () {
-  return this.reactions ? this.reactions.length: 0;
+  return this.reactions ? this.reactions.length : 0;
 });
 
 const Thought = model("Thought", thoughtSchema);
