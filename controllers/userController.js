@@ -4,31 +4,8 @@ module.exports = {
   //get all users
   async getUsers(req, res) {
     try {
-      const users = await User.find()
-      .populate([
-        {
-          path: "thoughts",
-          select: "thoughtText",
-        },
-        {
-          path: "friends",
-          select: "username",
-        },
-      ]);
-   
-      // Select certain fields from each user object
-      const usersSelectData = users.map((user) => {
-        return {
-          _id: user._id,
-          username: user.username,
-          email: user.email,
-          friendCount: user.friendCount,
-          thoughts: user.thoughts,
-          friends: user.friends,
-        };
-      });
-
-      res.json(usersSelectData);
+      const users = await Thought.find();
+      res.json(users);
     } catch (err) {
       console.log(err);
       return res.status(500).json(err);
@@ -38,7 +15,7 @@ module.exports = {
   async getSingleUser(req, res) {
     console.log("You are fetching a user");
     console.log(req.body);
-    
+
     try {
       const user = await User.findOne({ _id: req.params.userId }).select(
         "-__v"
@@ -151,7 +128,7 @@ module.exports = {
     }
   },
   // Remove friend from a user
-  
+
   async removeFriend(req, res) {
     console.log("You are removing a friend");
     console.log(req.body);
