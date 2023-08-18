@@ -13,11 +13,7 @@ const userSchema = new Schema(
         type: Schema.Types.ObjectId,
         ref: "User",
       },
-    ],
-    _id: {
-      type: Schema.Types.ObjectId,
-      auto: true,
-    },
+    ],  
     username: {
       type: String,
       unique: true,
@@ -34,11 +30,15 @@ const userSchema = new Schema(
   {
     toJSON: {
       virtuals: true,
+      transform: function (doc, ret) {
+        // Transform the 'id' field to '_id'
+        ret._id = ret.id;
+        delete ret.id; // Remove the 'id' field
+        delete ret.__v; // Remove the '__v' field
+      },
     },
   }
 );
-
-
 
 userSchema.virtual("friendCount").get(function () {
   return this.friends ? this.friends.length : 0;
